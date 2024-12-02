@@ -4,7 +4,7 @@ opencv-python-headless==4.10.0.84
 openpyxl==3.1.5
 pandas==2.2.3
 pillow
-pytesseract==0.3.13
+# pytesseract==0.3.13
 requests==2.32.3
 streamlit==1.40.2
-tesseract-ocr
+# tesseract-ocr
