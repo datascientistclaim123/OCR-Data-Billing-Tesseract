@@ -1,6 +1,19 @@
 import os
+import subprocess
 import streamlit as st
 from PIL import Image, ImageGrab
+
+# Install tesseract OCR if not available
+def install_tesseract():
+    try:
+        subprocess.run(['sudo', 'apt-get', 'update'], check=True)
+        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'tesseract-ocr'], check=True)
+        subprocess.run(['sudo', 'apt-get', 'install', '-y', 'tesseract-ocr-eng'], check=True)
+    except Exception as e:
+        print("Error installing tesseract:", e)
+
+install_tesseract()
+
 import pytesseract
 
 # Set page config harus dipanggil pertama
