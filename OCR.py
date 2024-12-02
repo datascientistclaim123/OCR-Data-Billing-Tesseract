@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image, ImageGrab
 import easyocr
 import numpy as np
-import re
+import re  # Pastikan modul re diimpor
 
 # Konfigurasi halaman Streamlit
 st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
