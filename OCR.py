@@ -1,9 +1,11 @@
 import os
+import subprocess
 import numpy as np
-from PIL import Image, ImageGrab
+from PIL import Image
 import easyocr
 import streamlit as st
 import platform
+from io import BytesIO
 
 # Periksa platform
 is_linux = platform.system() == "Linux"
@@ -34,17 +36,22 @@ with col1:
 with col2:
     if st.button("Tempel Gambar dari Clipboard"):
         if is_linux:
-            st.warning("Clipboard tidak didukung secara langsung di Linux tanpa wl-paste atau xclip.")
-        else:
             try:
-                clipboard_image = ImageGrab.grabclipboard()
-                if clipboard_image is not None:
+                # Jalankan xclip untuk membaca clipboard
+                result = subprocess.run(
+                    ["xclip", "-selection", "clipboard", "-t", "image/png", "-o"],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
+                if result.returncode == 0:
+                    clipboard_image = BytesIO(result.stdout)
+                    image = Image.open(clipboard_image)
                     st.success("Gambar berhasil ditempel dari clipboard!")
-                    image = clipboard_image
                 else:
-                    st.error("Tidak ada gambar di clipboard. Silakan coba lagi.")
-            except Exception as e:
-                st.error(f"Terjadi kesalahan saat mengakses clipboard: {e}")
+                    st.error(f"Gagal membaca clipboard: {result.stderr.decode('utf-8')}")
+            except FileNotFoundError:
+                st.error("xclip tidak ditemukan. Silakan instal dengan `sudo apt-get install xclip`.")
+        else:
+            st.error("Clipboard hanya didukung di Linux dengan xclip.")
 
 # OCR jika ada gambar
 if image:
