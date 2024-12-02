@@ -1,13 +1,15 @@
-import streamlit as st
+import os
+import numpy as np
 from PIL import Image, ImageGrab
 import easyocr
-import numpy as np
-import io
+import streamlit as st
+import platform
+
+# Periksa platform
+is_linux = platform.system() == "Linux"
 
 # Konfigurasi halaman Streamlit
 st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
-
-# Judul aplikasi
 st.title("OCR Sederhana untuk Ekstraksi Teks dari Gambar")
 
 st.write("""
@@ -20,8 +22,7 @@ st.write("""
 st.subheader("Input Gambar")
 col1, col2 = st.columns(2)
 
-# Variabel untuk menyimpan gambar
-image = None
+image = None  # Variabel untuk menyimpan gambar
 
 # Pilihan upload dari file
 with col1:
@@ -32,31 +33,29 @@ with col1:
 # Pilihan tempel dari clipboard
 with col2:
     if st.button("Tempel Gambar dari Clipboard"):
-        try:
-            # Mengambil gambar dari clipboard
-            clipboard_image = ImageGrab.grabclipboard()
-            if clipboard_image is not None:
-                st.success("Gambar berhasil ditempel dari clipboard!")
-                image = clipboard_image
-            else:
-                st.error("Tidak ada gambar di clipboard. Silakan coba lagi.")
-        except Exception as e:
-            st.error(f"Terjadi kesalahan: {e}")
+        if is_linux:
+            st.warning("Clipboard tidak didukung secara langsung di Linux tanpa wl-paste atau xclip.")
+        else:
+            try:
+                clipboard_image = ImageGrab.grabclipboard()
+                if clipboard_image is not None:
+                    st.success("Gambar berhasil ditempel dari clipboard!")
+                    image = clipboard_image
+                else:
+                    st.error("Tidak ada gambar di clipboard. Silakan coba lagi.")
+            except Exception as e:
+                st.error(f"Terjadi kesalahan saat mengakses clipboard: {e}")
 
-# Proses OCR jika ada gambar
+# OCR jika ada gambar
 if image:
-    # Menampilkan gambar yang diunggah atau ditempel
     st.subheader("Gambar yang Diproses")
     st.image(image, caption="Gambar Anda", use_column_width=True)
-
-    # Konversi gambar ke numpy array
-    image_np = np.array(image)
 
     # OCR menggunakan EasyOCR
     st.subheader("Hasil OCR")
     with st.spinner("Sedang memproses..."):
-        reader = easyocr.Reader(['en'])  # Ganti 'en' jika Anda ingin bahasa lain
-        results = reader.readtext(image_np)
+        reader = easyocr.Reader(['en'])  # Tambahkan bahasa lain jika diperlukan
+        results = reader.readtext(np.array(image))
 
     # Menampilkan hasil OCR
     if results:
