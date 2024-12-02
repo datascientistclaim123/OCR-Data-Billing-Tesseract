@@ -10,7 +10,7 @@ st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
 st.title("OCR Sederhana untuk Ekstraksi Teks dari Gambar")
 
 st.write("""
-1. Unggah file gambar dari komputer Anda.  
+1. Unggah file gambar dari local Anda.  
 2. Teks akan diekstraksi secara otomatis.
 """)
 
