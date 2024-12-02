@@ -19,19 +19,32 @@ st.write("""
 st.subheader("Input Gambar")
 uploaded_file = st.file_uploader("Unggah gambar dari file", type=["png", "jpg", "jpeg"])
 
-# Fungsi untuk menggabungkan baris
-def merge_lines(lines):
-    merged_text = []
-    for i, line in enumerate(lines):
-        if i == 0:  # Baris pertama langsung ditambahkan
-            merged_text.append(line)
+# Fungsi untuk menggabungkan baris dengan jarak
+def process_ocr_results(results):
+    processed_lines = []
+    previous_bottom = None
+
+    for res in results:
+        text, bbox = res[1], res[0]  # Hasil teks dan bounding box
+        _, _, _, bottom = bbox[0][1], bbox[1][1], bbox[2][1], bbox[3][1]
+        
+        # Jika jarak antar baris jauh, tambahkan baris baru
+        if previous_bottom and (bottom - previous_bottom) > 15:  # Sesuaikan threshold 15 sesuai kebutuhan
+            processed_lines.append("")  # Tambahkan baris kosong untuk memisah paragraf
+        
+        # Pastikan angka di awal baris tetap
+        if re.match(r"^\d+\.\s*", text):
+            processed_lines.append(text)
         else:
-            # Gabungkan dengan baris sebelumnya jika baris sebelumnya tidak diakhiri tanda baca
-            if not re.search(r"[.!?]$", merged_text[-1]):  
-                merged_text[-1] += " " + line
+            # Gabungkan ke baris sebelumnya jika tidak ada jarak antar baris
+            if processed_lines and processed_lines[-1]:
+                processed_lines[-1] += " " + text
             else:
-                merged_text.append(line)
-    return merged_text
+                processed_lines.append(text)
+
+        previous_bottom = bottom
+
+    return processed_lines
 
 # Proses OCR jika ada gambar
 if uploaded_file is not None:
@@ -53,9 +66,9 @@ if uploaded_file is not None:
 
     # Menampilkan hasil OCR
     if results:
-        # Gabungkan teks hasil OCR
-        raw_text = [res[1] for res in results]
-        processed_text = "\n".join(merge_lines(raw_text))  # Proses penggabungan baris
-        st.text_area("Hasil Teks Ekstraksi", processed_text, height=200)
+        # Proses hasil OCR dengan jarak antar baris
+        processed_lines = process_ocr_results(results)
+        final_text = "\n".join(processed_lines)
+        st.text_area("Hasil Teks Ekstraksi", final_text, height=200)
     else:
         st.error("Tidak ada teks yang terdeteksi.")
