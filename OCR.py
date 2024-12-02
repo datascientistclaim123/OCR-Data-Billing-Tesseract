@@ -19,32 +19,38 @@ st.write("""
 st.subheader("Input Gambar")
 uploaded_file = st.file_uploader("Unggah gambar dari file", type=["png", "jpg", "jpeg"])
 
-# Fungsi untuk menggabungkan baris dengan jarak
-def process_ocr_results(results):
-    processed_lines = []
-    previous_bottom = None
+# Fungsi untuk memisahkan baris berdasarkan jarak antar koordinat
+def split_by_spacing(results, threshold=20):
+    """
+    Memisahkan baris berdasarkan jarak antar koordinat y hasil OCR.
+    """
+    lines = []
+    current_line = [results[0][1]]  # Mulai dari teks pertama
+    prev_bottom = results[0][0][2][1]  # Koordinat y dari baris pertama
 
-    for res in results:
-        text, bbox = res[1], res[0]  # Hasil teks dan bounding box
-        _, _, _, bottom = bbox[0][1], bbox[1][1], bbox[2][1], bbox[3][1]
-        
-        # Jika jarak antar baris jauh, tambahkan baris baru
-        if previous_bottom and (bottom - previous_bottom) > 15:  # Sesuaikan threshold 15 sesuai kebutuhan
-            processed_lines.append("")  # Tambahkan baris kosong untuk memisah paragraf
-        
-        # Pastikan angka di awal baris tetap
-        if re.match(r"^\d+\.\s*", text):
-            processed_lines.append(text)
+    for box, text, _ in results[1:]:
+        top = box[0][1]  # Koordinat y atas dari baris berikutnya
+        if top - prev_bottom > threshold:  # Jika jaraknya melebihi ambang batas
+            lines.append(" ".join(current_line))
+            current_line = [text]  # Mulai baris baru
         else:
-            # Gabungkan ke baris sebelumnya jika tidak ada jarak antar baris
-            if processed_lines and processed_lines[-1]:
-                processed_lines[-1] += " " + text
-            else:
-                processed_lines.append(text)
+            current_line.append(text)  # Gabungkan ke baris yang sama
+        prev_bottom = box[2][1]  # Perbarui koordinat y bawah
 
-        previous_bottom = bottom
+    # Tambahkan baris terakhir
+    if current_line:
+        lines.append(" ".join(current_line))
 
-    return processed_lines
+    return lines
+
+# Fungsi untuk memperbaiki format angka list (1., 2., 3., dst.)
+def restore_numbering(lines):
+    numbered_lines = []
+    for line in lines:
+        # Menambahkan kembali angka list jika terdeteksi hilang
+        line = re.sub(r"(?<!\d\.)\b(\d)\b", r"\1.", line)  # Menambahkan titik setelah angka
+        numbered_lines.append(line)
+    return numbered_lines
 
 # Proses OCR jika ada gambar
 if uploaded_file is not None:
@@ -66,9 +72,13 @@ if uploaded_file is not None:
 
     # Menampilkan hasil OCR
     if results:
-        # Proses hasil OCR dengan jarak antar baris
-        processed_lines = process_ocr_results(results)
-        final_text = "\n".join(processed_lines)
+        # Pisahkan baris berdasarkan jarak antar baris
+        lines = split_by_spacing(results)
+
+        # Perbaiki format angka list
+        final_text = "\n".join(restore_numbering(lines))
+
+        # Tampilkan hasil akhir di Streamlit
         st.text_area("Hasil Teks Ekstraksi", final_text, height=200)
     else:
         st.error("Tidak ada teks yang terdeteksi.")
