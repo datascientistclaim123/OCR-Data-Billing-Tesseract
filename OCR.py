@@ -3,6 +3,7 @@ from PIL import Image, ImageGrab
 import easyocr
 import numpy as np
 import io
+import cv2
 
 # Konfigurasi halaman Streamlit
 st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
@@ -49,14 +50,19 @@ if image:
     st.subheader("Gambar yang Diproses")
     st.image(image, caption="Gambar Anda", use_column_width=True)
 
-    # Konversi gambar ke numpy array
+    # Konversi gambar ke numpy array dan resize
     image_np = np.array(image)
+    base_width = 800
+    wpercent = (base_width / float(image.size[0]))
+    hsize = int((float(image.size[1]) * float(wpercent)))
+    image_resized = image.resize((base_width, hsize), Image.ANTIALIAS)
+    image_np_resized = np.array(image_resized)
 
-    # OCR menggunakan EasyOCR
+    # OCR menggunakan EasyOCR dengan konfigurasi optimal
     st.subheader("Hasil OCR")
     with st.spinner("Sedang memproses..."):
-        reader = easyocr.Reader(['en'])  # Ganti 'en' jika Anda ingin bahasa lain
-        results = reader.readtext(image_np)
+        reader = easyocr.Reader(['en'], adjust_contrast=True)
+        results = reader.readtext(image_np_resized)
 
     # Menampilkan hasil OCR
     if results:
