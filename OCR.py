@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image, ImageGrab
 import easyocr
 import numpy as np
-import re  # Pastikan modul re diimpor
+import io
 
 # Konfigurasi halaman Streamlit
 st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
@@ -11,8 +11,8 @@ st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
 st.title("OCR Sederhana untuk Ekstraksi Teks dari Gambar")
 
 st.write("""
-1. Screenshot teks menggunakan tombol `PrtSc` atau upload file gambar dari local.  
-2. **Tempel gambar** hasil Screenshot menggunakan tombol `Tempel Gambar dari Clipboard` di bawah secara langsung atau `Unggah Gambar dari File Local`.
+1. Screenshot teks menggunakan tombol PrtSc atau upload file gambar dari local.  
+2. **Tempel gambar** hasil Screenshot menggunakan tombol Tempel Gambar dari Clipboard di bawah secara langsung atau Unggah Gambar dari File Local.
 3. Teks akan diekstraksi secara otomatis.
 """)
 
@@ -43,20 +43,6 @@ with col2:
         except Exception as e:
             st.error(f"Terjadi kesalahan: {e}")
 
-# Fungsi untuk memperbaiki pemisahan kalimat berdasarkan newline yang tidak diinginkan
-def fix_newlines(text):
-    # Pisahkan teks berdasarkan newline
-    lines = text.split('\n')
-
-    # Gabungkan baris jika baris berikutnya tidak memiliki tanda baca akhir
-    for i in range(len(lines) - 1):
-        if lines[i][-1] not in ['.', '?', '!'] and lines[i+1][0].islower():
-            lines[i] += ' ' + lines[i+1]
-            lines[i+1] = ''
-    
-    # Gabungkan kembali menjadi teks
-    return ' '.join([line for line in lines if line])
-
 # Proses OCR jika ada gambar
 if image:
     # Menampilkan gambar yang diunggah atau ditempel
@@ -75,11 +61,6 @@ if image:
     # Menampilkan hasil OCR
     if results:
         extracted_text = "\n".join([res[1] for res in results])  # Gabungkan semua teks
-        
-        # Memperbaiki pemisahan kalimat yang tidak diinginkan
-        cleaned_text = fix_newlines(extracted_text)
-
-        # Tampilkan hasil teks yang sudah dibersihkan
-        st.text_area("Hasil Teks Ekstraksi", cleaned_text, height=200)
+        st.text_area("Hasil Teks Ekstraksi", extracted_text, height=200)
     else:
         st.error("Tidak ada teks yang terdeteksi.")
