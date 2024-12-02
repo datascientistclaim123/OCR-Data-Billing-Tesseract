@@ -8,12 +8,11 @@ import io
 st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
 
 # Judul aplikasi
-st.title("OCR Sederhana Menggunakan EasyOCR")
+st.title("OCR Sederhana untuk Ekstraksi Teks dari Gambar")
 
-# Instruksi
 st.write("""
-1. **Screenshot teks** (gunakan tombol `PrtSc` atau alat lainnya).  
-2. Tempel gambar menggunakan **Ctrl+V**, atau unggah gambar dari file lokal Anda.  
+1. Screenshot teks menggunakan tombol `PrtSc` atau upload file gambar dari local.  
+2. **Tempel gambar** hasil Screenshot menggunakan tombol `Tempel Gambar dari Clipboard` di bawah secara langsung atau `Unggah Gambar dari File Local`.
 3. Teks akan diekstraksi secara otomatis.
 """)
 
