@@ -49,8 +49,20 @@ def restore_numbering(lines):
     for line in lines:
         # Menambahkan kembali angka list jika terdeteksi hilang
         line = re.sub(r"(?<!\d\.)\b(\d)\b", r"\1.", line)  # Menambahkan titik setelah angka
+        line = re.sub(r"(\d\.\.)", r"\1".replace("..", "."), line)  # Menghindari duplikasi titik
         numbered_lines.append(line)
     return numbered_lines
+
+# Fungsi untuk mengatur ulang baris dan paragraf
+def format_paragraphs(lines):
+    formatted_lines = []
+    for line in lines:
+        # Pisahkan paragraf dengan jarak atau tanda list
+        if re.match(r"^\d\.", line):  # Jika ini adalah list (1., 2., dst.)
+            formatted_lines.append("\n" + line.strip())
+        else:
+            formatted_lines.append(line.strip())
+    return " ".join(formatted_lines).strip()
 
 # Proses OCR jika ada gambar
 if uploaded_file is not None:
@@ -76,7 +88,10 @@ if uploaded_file is not None:
         lines = split_by_spacing(results)
 
         # Perbaiki format angka list
-        final_text = "\n".join(restore_numbering(lines))
+        numbered_lines = restore_numbering(lines)
+
+        # Gabungkan baris menjadi paragraf
+        final_text = format_paragraphs(numbered_lines)
 
         # Tampilkan hasil akhir di Streamlit
         st.text_area("Hasil Teks Ekstraksi", final_text, height=200)
