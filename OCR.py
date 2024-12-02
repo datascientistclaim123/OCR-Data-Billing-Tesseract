@@ -11,8 +11,8 @@ st.set_page_config(page_title="OCR dengan EasyOCR", layout="centered")
 st.title("OCR Sederhana untuk Ekstraksi Teks dari Gambar")
 
 st.write("""
-1. Screenshot teks menggunakan tombol PrtSc atau upload file gambar dari local.  
-2. **Tempel gambar** hasil Screenshot menggunakan tombol Tempel Gambar dari Clipboard di bawah secara langsung atau Unggah Gambar dari File Local.
+1. Screenshot teks menggunakan tombol `PrtSc` atau upload file gambar dari local.  
+2. **Tempel gambar** hasil Screenshot menggunakan tombol `Tempel Gambar dari Clipboard` di bawah secara langsung atau `Unggah Gambar dari File Local`.
 3. Teks akan diekstraksi secara otomatis.
 """)
 
